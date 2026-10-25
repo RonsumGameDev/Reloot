@@ -1,0 +1,27 @@
+#python
+__pycache__/
+*.py[cod]
+*.pyo
+
+#Virtual Environment
+.venv/
+venv/
+
+#Environemtn Variables and Secrets
+.env
+.env.*
+
+#Allow an example env file
+!.env.example
+
+#Django
+db.sqlite3
+media/
+staticfiles/
+
+#Editors
+.vscode/
+.idea/
+
+#OS files
+.DS_Store
