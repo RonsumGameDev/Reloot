@@ -43,10 +43,11 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "corsheaders",
+    "rest_framework",
 ]
 
 CREATED_APPS = [
-    
+    "api",
 ]
 
 INSTALLED_APPS += CREATED_APPS
