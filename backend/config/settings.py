@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 
 CREATED_APPS = [
     "api",
+    "listings",
 ]
 
 INSTALLED_APPS += CREATED_APPS
