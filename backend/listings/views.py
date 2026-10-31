@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view
 from rest_framework import status
@@ -26,4 +26,28 @@ def listing_list(request):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
+def listing_detail(request, pk):
+    listing = get_object_or_404(Listing, pk=pk)
+    
+    if request.method == "GET":
+        serializer = ListingSerializer(listing)
+        return Response(serializer.data)
+    
+    elif request.method in ["PUT", "PATCH"]:
+        serializer = ListingSerializer(listing, data=request.data, partial=(request.method == "PATCH"))
+        
+        if(serializer.is_valid()):
+            serializer.save()
+            
+            return Response(serializer.data)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == "DELETE":
+        listing.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+        
     
