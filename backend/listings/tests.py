@@ -7,7 +7,7 @@ from rest_framework import status
 
 from .models import Listing
 
-# Create your tests here.
+# SETUP
 
 class ListingAPITests(APITestCase):
     
@@ -56,7 +56,96 @@ class ListingAPITests(APITestCase):
         
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
     
-        
+    #POST TESTS
     
+    def test_create_listing(self):
+        
+        data = self.valid_listing_data()
+        
+        response = self.client.post(self.list_url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        self.assertEqual(Listing.objects.count(), 2)
+        
+        self.assertEqual(response.data["title"], data["title"])
+        
+    def test_create_listing_with_invalid_categories(self):
+        data = self.valid_listing_data()
+        data["category"] = "food"
+        
+        response = self.client.post(self.list_url, data, format="json")
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+        self.assertIn("category", response.data)
+        
+    #PUT TESTS
+    
+    def test_update_listing(self):
+        
+        data = {
+            "title": "Updated Charizard Card",
+            "description": "Updated Collectable description",
+            "price": "1999.99",
+            "category": Listing.Category.TRADING_CARDS,
+            "condition": Listing.Condition.GOOD
+        }
+        
+        response = self.client.put(self.detail_url, data, format="json")
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.listing.refresh_from_db()
+        
+        self.assertEqual(self.listing.price, Decimal("1999.99"))
+        
+    def test_put_with_missing_fields(self):
+        data = {
+            "title" : "Incomplete Update"
+        }
+        
+        response = self.client.put(self.detail_url, data, format="json")
+        
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        
+    #PATCH TESTS
+    
+    def test_partial_update_listing(self):
+        data = {
+            "price": "1299.99"
+        }
+        
+        response = self.client.patch(self.detail_url, data, format="json")
+        
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.listing.refresh_from_db()
+        
+        self.assertEqual(self.listing.price, Decimal("1299.99"))
+
+        self.assertEqual(self.listing.title, "Pokemon Charizard Card")
         
         
+    #DELETE TESTS
+    
+    def test_delete_listing(self):
+        response = self.client.delete(self.detail_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        
+        self.assertFalse(Listing.objects.filter(pk=self.listing.pk).exists())
+        
+    def test_get_deleted_listing(self):
+        
+        self.client.delete(self.detail_url)
+        response = self.client.get(self.detail_url)
+        
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    
+    #HTTP METHODS
+    
+    def test_unsupported_method(self):
+            
+        response = self.client.post(self.detail_url, self.valid_listing_data(), format = "json")
+        
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
